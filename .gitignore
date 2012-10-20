@@ -2,11 +2,24 @@
 *.slo
 *.lo
 *.o
+*.obj
 
 # Compiled Dynamic libraries
 *.so
+*.dll
 
 # Compiled Static libraries
 *.lai
 *.la
 *.a
+*.lib
+
+# Visual Studio Generated File
+build/vs2010/SKS/Debug/
+build/vs2010/SKS/Release/
+build/vs2010/Simplistic_Keyvalues_Scripting/
+build/vs2010/Simplistic_Keyvalues_Scripting.sdf
+build/vs2010/TestSKS/Debug/
+build/vs2010/TestSKS/Release/
+build/vs2010/ipch/
+build/vs2010/Simplistic_Keyvalues_Scripting.opensdf

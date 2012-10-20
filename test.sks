@@ -1,0 +1,3 @@
+myString : "S\"t\'r\ning with\\ no escape c\haracters"
+myInt : -1232
+thisisthereallylongname : 343
