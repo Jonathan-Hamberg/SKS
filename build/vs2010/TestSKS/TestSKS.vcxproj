@@ -11,15 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\SKS_Test\Test_SKS.cpp" />
+    <ClCompile Include="..\..\..\src\SKS\SKS.cpp" />
+    <ClCompile Include="..\..\..\src\SKS\Test_SKS.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\bin\SKS.lib" />
+    <ClInclude Include="..\..\..\src\SKS\SKS.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5B795C00-4BCB-418F-A106-424F321EAA2C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TestSKS</RootNamespace>
+    <ProjectName>SKS</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

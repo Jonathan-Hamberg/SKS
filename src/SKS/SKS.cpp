@@ -188,8 +188,9 @@ Namespace *SKS::GetNamespaceFromFile(const char *fileName)
 	sksFile.read(m_fileContents, m_lengthOfFile);
 
 	sksFile.close();
+
 	// Currents position in the file
-	int curPosition = 0;
+	Position curPosition;
 
 	// Creates the namespace that gets filled with the info from the file
 	Namespace *topLevel;
@@ -203,7 +204,7 @@ Namespace *SKS::GetNamespaceFromFile(const char *fileName)
 
 	return topLevel;
 }
-char *SKS::GetName(int &pos)
+char *SKS::GetName(Position &pos)
 {
 	// This is the actual meat of the parser that looks for the identifier
 	// name of the key value or namespace
@@ -213,23 +214,23 @@ char *SKS::GetName(int &pos)
 	int namePosition = 0;
 
 	// Gets rid of leading whitespace
-	while(isspace(m_fileContents[pos]))
-		pos++;
+	while(isspace(m_fileContents[pos.pos]))
+		Advance(pos);
 
 	bool errorMessage = false;
 	// Read until hit space or : or newline
-	while(m_fileContents[pos] != ' ' && m_fileContents[pos] != ':' &&
-		m_fileContents[pos] != '\n')
+	while(m_fileContents[pos.pos] != ' ' && m_fileContents[pos.pos] != ':' &&
+		m_fileContents[pos.pos] != '\n')
 	{
 		// only add to the name if it is currently under 255 characters
 		if(namePosition < MAX_STATEMENT)
 		{
-			name[namePosition] = m_fileContents[pos];
+			name[namePosition] = m_fileContents[pos.pos];
 			namePosition++;
 		}
 		else
 			errorMessage = true;
-		pos++;
+		Advance(pos);
 	}
 
 	// Add Null terminator toAtring
@@ -238,15 +239,15 @@ char *SKS::GetName(int &pos)
 	if(errorMessage)
 		cerr << name << " is not under " << MAX_STATEMENT << " characters long.\n";
 	// Advance until one after the colon character or left brace
-	while(m_fileContents[pos] != ':' && m_fileContents[pos] != '{')
-		pos++;
-	pos++;
+	while(m_fileContents[pos.pos] != ':' && m_fileContents[pos.pos] != '{')
+		Advance(pos);
+	Advance(pos);
 
 	// Name of the key value or namespace
 	return name;
 }
 // The first thing it get will be the key value
-KeyValue *SKS::GetKeyValue(int &pos)
+KeyValue *SKS::GetKeyValue(Position &pos)
 {
 	// Creates the key value to be sent back
 	KeyValue *val = new KeyValue();
@@ -255,96 +256,94 @@ KeyValue *SKS::GetKeyValue(int &pos)
 	val->SetName(GetName(pos));
 
 	// Gets rid of leading whitespace
-	while(isspace(m_fileContents[pos]))
-		pos++;
+	while(isspace(m_fileContents[pos.pos]))
+		Advance(pos);
 	// One reaches first character determine if a string or some sort of real number
-	if(m_fileContents[pos] == '"')
+	if(m_fileContents[pos.pos] == '"')
 	{
 		// move position to the first value of the string
-		pos++;
+		Advance(pos);
 
 		// Creates the string that will holst the value
 		char * string = new char [MAX_STATEMENT];
 
 		// loop until the end of the string
 		int stringPos = 0;
-		while(m_fileContents[pos] != '"')
+		while(m_fileContents[pos.pos] != '"')
 		{
 			// Inserts any escape characters
-			if(m_fileContents[pos] == '\\')
+			if(m_fileContents[pos.pos] == '\\')
 			{
-				pos++;
-				if(m_fileContents[pos] == '"') // Quotes
-					string[stringPos] = m_fileContents[pos];
-				else if(m_fileContents[pos] == '\'') // Quote
-					string[stringPos] = m_fileContents[pos];
-				else if(m_fileContents[pos] == '\\')
-					string[stringPos] = m_fileContents[pos];
-				else if(m_fileContents[pos] == 'n') // Newline
+				Advance(pos);
+				if(m_fileContents[pos.pos] == '"') // Quotes
+					string[stringPos] = m_fileContents[pos.pos];
+				else if(m_fileContents[pos.pos] == '\'') // Quote
+					string[stringPos] = m_fileContents[pos.pos];
+				else if(m_fileContents[pos.pos] == '\\')
+					string[stringPos] = m_fileContents[pos.pos];
+				else if(m_fileContents[pos.pos] == 'n') // Newline
 					string[stringPos] = '\n';
 				else
 				{
-					cerr << "Unknown Escape character \'" <<
-						m_fileContents[pos] << "'. Ignoring the backslash.\n";
+					cerr << "Unknown escape character \'" <<
+						m_fileContents[pos.pos] << "' Line: " << pos.line << endl;
 					// Just put the character after the backslash
 					// in anyways
-					string[stringPos] = m_fileContents[pos];
+					string[stringPos] = m_fileContents[pos.pos];
 				}
 
 				// Increments their position
 				stringPos++;
-				pos++;
+				Advance(pos);
 			}
 			else
 			{
-				string[stringPos] = m_fileContents[pos];
+				string[stringPos] = m_fileContents[pos.pos];
 				stringPos++;
-				pos++;
+				Advance(pos);
 			}
 		}
 
 		// Adds null terminator to end of string
 		string[stringPos] = NULL;
 
-		pos++;  // Advances to the character after the ending quotes
+		Advance(pos);  // Advances to the character after the ending quotes
 
 		// Tells the key value what it is holding
 		val->SetKeyValueType(TYPE_STRING);
 		val->SetString(string);
 		
 	}
-	else if(isdigit(m_fileContents[pos]) || m_fileContents[pos] == '-')
+	else if(isdigit(m_fileContents[pos.pos]) || m_fileContents[pos.pos] == '-')
 	{
-		int integer, fraction;
+		int integer = 0, fraction = 0;
 		// string big enough to hold an 32 bit integer
 		char num[11];
 		
 		bool isNegitive = false;
-		if(m_fileContents[pos] == '-')
+		if(m_fileContents[pos.pos] == '-')
 		{
 			// Tells that the number is negitive
 			isNegitive = true;
 
 			//Advanes to the actual first number
-			pos++;
+			Advance(pos);
 
 			//Gets rid of any spaces that might be inbetween the negitive sign
 			// and the start of the number
-			while(isspace(m_fileContents[pos]))
-				pos++;
+			while(isspace(m_fileContents[pos.pos]))
+				Advance(pos);
 		}
 
 		// Read until a space is hit or a . is hit for a real number or the semi colon
 		int i = 0;
-		while(isdigit(m_fileContents[pos]))
+		while(isdigit(m_fileContents[pos.pos]))
 		{
-			num[i] = m_fileContents[pos];
-			pos++;
-			i++;
+			num[i++] = m_fileContents[Advance(pos)];
 			
-			if(i > 10) // Bigger number then the 2 billion of a 4 byte integer
+			if(i >= 10) // Bigger number then the 2 billion of a 4 byte integer
 			{
-				cerr << "Integer overflow on line: ,column: FIXME" << endl;
+				cerr << "Integer Overflow. Line:  " << pos.line << endl;
 				break;
 			}
 		}
@@ -357,18 +356,27 @@ KeyValue *SKS::GetKeyValue(int &pos)
 
 
 		// if there is a fraction part to the number
-		if(m_fileContents[pos] == '.')
+		if(m_fileContents[pos.pos] == '.')
 		{
-			pos++;
+			Advance(pos);
 			i = 0;
-			while(isdigit(m_fileContents[pos]))
+			while(isdigit(m_fileContents[pos.pos]))
 			{
-				num[i] = m_fileContents[pos];
-				pos++;
-				i++;
+				num[i++] = m_fileContents[Advance(pos)];
+
+				if(i >= 10) // Bigger number then the 2 billion of a 4 byte integer
+				{
+					// Prints error message
+					cerr << "Integer Overflow. Line:  " << pos.line << endl;
+
+					// Advances the position past the rest of the number
+					while(isdigit(m_fileContents[pos.pos]))
+						Advance(pos);
+					break;
+				}
 			}
 			// add null termintaor to string
-			num[i++] = 0;
+			num[i] = 0;
 
 			// figures out the fractal part
 			fraction = atoi(num);
@@ -391,7 +399,7 @@ KeyValue *SKS::GetKeyValue(int &pos)
 
 	return val;
 }
-Namespace *SKS::GetNamespace(int &pos, bool noName)
+Namespace *SKS::GetNamespace(Position &pos, bool noName)
 {
 	Namespace *name = new Namespace();
 	if(!noName)
@@ -421,51 +429,63 @@ Namespace *SKS::GetNamespace(int &pos, bool noName)
 	}
 	return name;
 }
-bool SKS::isLineNamespaceEnd(int pos)
+bool SKS::isLineNamespaceEnd(Position pos)
 {
 	// Get rid of leading whitespace and newlines
-	while(isspace(m_fileContents[pos]))
-		pos++;
+	while(isspace(m_fileContents[pos.pos]))
+		Advance(pos);
 
 	// it is the linespace end if the first character found is a right parentheses
-	return m_fileContents[pos] == '}' ? true : false;
+	return m_fileContents[pos.pos] == '}' ? true : false;
 }
-void SKS::ExitNamespace(int &pos)
+void SKS::ExitNamespace(Position &pos)
 {
 	// Advances to the character after the right parentheses
-	while(m_fileContents[pos] != '}')
-		pos++;
-	pos++;
+	while(m_fileContents[pos.pos] != '}')
+		Advance(pos);
+	Advance(pos);
 }
-bool SKS::isLineKeyValue(int pos)
+bool SKS::isLineKeyValue(Position pos)
 {
 	return !isLineNamespace(pos);
 }
-bool SKS::isLineNamespace(int pos)
+bool SKS::isLineNamespace(Position pos)
 {
 	bool foundName = false;
 
 	// Gets rid of leading white spaces
-	while(m_fileContents[pos] == ' ')
-		pos++;
+	while(m_fileContents[pos.pos] == ' ')
+		Advance(pos);
 
 	// Gets past the name and value then check for the next key value or left brach
-	while(m_fileContents[pos] != ':' && m_fileContents[pos] != '{')
-		pos++;
+	while(m_fileContents[pos.pos] != ':' && m_fileContents[pos.pos] != '{')
+		Advance(pos);
 
 	// If left brace then it's a namespace
-	if(m_fileContents[pos] == '{')
+	if(m_fileContents[pos.pos] == '{')
 		return true;
 	return false; // if not left brance must be key value
 }
-bool SKS::islineEndOfFile(int pos)
+bool SKS::islineEndOfFile(Position pos)
 {
 	// Advances until it has found a non whitespace or passes the length of the file
-	while(pos < m_lengthOfFile && isspace(m_fileContents[pos]))
-		pos++;
+	while(pos.pos < m_lengthOfFile && isspace(m_fileContents[pos.pos]))
+		Advance(pos);
 
 	// return true if pos >= m_lenthOfFile
-	if(pos >= m_lengthOfFile)
+	if(pos.pos >= m_lengthOfFile)
 		return true;
 	return false;
+}
+// This function advances the index of the file and also
+// keeps track of line number and colum
+int SKS::Advance(Position &pos)
+{
+	pos.colum++;
+	if(m_fileContents[pos.pos] == '\n')
+	{
+		pos.line++;
+		pos.colum = 0;
+	}
+	return ++pos.pos;
 }

@@ -17,6 +17,20 @@ enum KEY_VALUE_TYPES
 	TYPE_STRING
 };
 
+struct Position
+{
+	int pos;
+	int line;
+	int colum;
+
+	Position()
+	{
+		pos = 0;
+		line = 1;
+		colum = 0;
+	}
+};
+
 class KeyValue
 {
 public:
@@ -80,15 +94,15 @@ public:
 	Namespace *GetNamespaceFromFile(const char *);
 	char *GetVersion();
 private:
-	bool isLineKeyValue(int pos);
-	bool isLineNamespace(int pos);
-	bool isLineNamespaceEnd(int pos);
-	bool islineEndOfFile(int pos);
-	KeyValue *GetKeyValue(int &pos);
-	Namespace *GetNamespace(int &pos, bool noName = false);
-	char *GetName(int &pos);
-	void ExitNamespace(int &pos);
-	void EatWhitespace(int &pos);
+	bool isLineKeyValue(Position pos);
+	bool isLineNamespace(Position pos);
+	bool isLineNamespaceEnd(Position pos);
+	bool islineEndOfFile(Position pos);
+	KeyValue *GetKeyValue(Position &pos);
+	Namespace *GetNamespace(Position &pos, bool noName = false);
+	char *GetName(Position &pos);
+	void ExitNamespace(Position &pos);
+	int Advance(Position &pos);
 	char *m_fileContents;
 	unsigned int m_lengthOfFile;
 };

@@ -1,3 +1,6 @@
-myString : "S\"t\'r\ning with\\ no escape c\haracters"
-myInt : -1232
-thisisthereallylongname : 343
+myString : "this is a string"
+namespace
+{
+	myInt : 21343
+	myFloat -23.234
+}

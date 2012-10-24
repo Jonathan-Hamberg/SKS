@@ -8,7 +8,7 @@
 using namespace std;
 void PrintNamespaceContents(Namespace*, int);
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
 	Namespace *name = sks.GetNamespaceFromFile("..\\test.sks");
 	PrintNamespaceContents(name, -1);

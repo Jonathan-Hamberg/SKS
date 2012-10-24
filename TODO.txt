@@ -1,8 +1,9 @@
  *Add the ability to make c and c++ style comments.
  *Make a array to store the indexes in alphabeticle order.
     That way you can look up values with a binary search.
-* Add system to record the row and colum number for debugging.
-* Add error messages telling the user where and what is wrong with the file.
-* Fix bugs in general that crash the program.
+* Add error messages telling the user where and what is wrong with the file. Work in progress.
+* Fix bugs in general that crash the program.  Work in progress.
 * Make nice function in the sks class to print the contents of a file to the console.
 
+
+* Add system to record the row and colum number for debugging. Done!

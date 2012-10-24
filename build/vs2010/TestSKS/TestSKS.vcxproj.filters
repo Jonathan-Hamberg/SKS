@@ -5,18 +5,21 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Libs">
-      <UniqueIdentifier>{7a17aa43-154c-420b-b242-6fa1a4955edb}</UniqueIdentifier>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{739bae0e-f300-4197-b3a9-dac70949df39}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\SKS_Test\Test_SKS.cpp">
+    <ClCompile Include="..\..\..\src\SKS\SKS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\SKS\Test_SKS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\bin\SKS.lib">
-      <Filter>Libs</Filter>
-    </Library>
+    <ClInclude Include="..\..\..\src\SKS\SKS.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
