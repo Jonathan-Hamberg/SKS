@@ -74,6 +74,8 @@ public:
 	bool isNextIndexNamespace();
 	KeyValue *GetNextKeyValue();
 	Namespace *GetNextNamespace();
+	KeyValue *GetCurrentKeyValue();
+	Namespace *GetCurrentNamespace();
 private:
 	// maps that the key value and Namespaces are held in
 	 vector<Namespace *> namespaceHolder;

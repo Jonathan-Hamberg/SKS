@@ -2,5 +2,5 @@ myString : "this is a string"
 namespace
 {
 	myInt : 21343
-	myFloat -23.234
+	myFloat : -23.234
 }

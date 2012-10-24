@@ -148,7 +148,14 @@ Namespace *Namespace::GetNextNamespace()
 	m_currentNamespaceIndex++;
 	return namespaceHolder[m_currentNamespaceIndex - 1];
 }
-
+KeyValue *Namespace::GetCurrentKeyValue()
+{
+	return keyValueHolder[m_currentKeyValueIndex];
+}
+Namespace *Namespace::GetCurrentNamespace()
+{
+	return namespaceHolder[m_currentNamespaceIndex];
+}
 
 
 SKS::SKS(void)
@@ -339,7 +346,8 @@ KeyValue *SKS::GetKeyValue(Position &pos)
 		int i = 0;
 		while(isdigit(m_fileContents[pos.pos]))
 		{
-			num[i++] = m_fileContents[Advance(pos)];
+			num[i++] = m_fileContents[pos.pos];
+			Advance(pos);
 			
 			if(i >= 10) // Bigger number then the 2 billion of a 4 byte integer
 			{
@@ -362,7 +370,9 @@ KeyValue *SKS::GetKeyValue(Position &pos)
 			i = 0;
 			while(isdigit(m_fileContents[pos.pos]))
 			{
-				num[i++] = m_fileContents[Advance(pos)];
+				num[i++] = m_fileContents[pos.pos];
+
+				Advance(pos);
 
 				if(i >= 10) // Bigger number then the 2 billion of a 4 byte integer
 				{
