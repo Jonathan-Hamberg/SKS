@@ -105,59 +105,153 @@ void Namespace::AddKeyValue(KeyValue *val)
 	// Inserts the new key value into the map
 	keyValueHolder.push_back(val);
 	// Stores data to tell that the index is a key value
-	isIndexKeyValue.push_back(true);
+	keyValueIndex.push_back(true);
+	// Stores the index for alphabetizing
+	sortedKeyValue.push_back(sortedKeyValue.size());
 }
 void Namespace::AddNamespace(Namespace *namesp)
 {
 	namespaceHolder.push_back(namesp);
 	// Stores data to tell that the index is not a key value
-	isIndexKeyValue.push_back(false);
-}
-void Namespace::GetFirstIndex()
-{
-	m_currentKeyValueIndex = 0;
-	m_currentNamespaceIndex = 0;
-}
-bool Namespace::isNextIndexKeyValue()
-{
-	// First make sure that we arn't requesting something that isn't there
-	if(m_currentKeyValueIndex + m_currentNamespaceIndex >= isIndexKeyValue.size())
-		return false;
-	// Gets the current location in the namespace by adding that 
-	//last know key value and namespace indexes
-	return isIndexKeyValue[m_currentKeyValueIndex + m_currentNamespaceIndex];
-}
-bool Namespace::isNextIndexNamespace()
-{
-	// First make sure that we arn't requesting something that isn't there
-	if(m_currentKeyValueIndex + m_currentNamespaceIndex >= isIndexKeyValue.size())
-		return false;
-	// Gets the current location in the namespace by adding the
-	// last know key value and namespace indexes
-	return !isIndexKeyValue[m_currentKeyValueIndex + m_currentNamespaceIndex];
-}
-KeyValue *Namespace::GetNextKeyValue()
-{
-	// Increments the last know key value location
-	m_currentKeyValueIndex++;
-	return keyValueHolder[m_currentKeyValueIndex - 1];
-}
-Namespace *Namespace::GetNextNamespace()
-{
-	//increments the last know namespace location
-	m_currentNamespaceIndex++;
-	return namespaceHolder[m_currentNamespaceIndex - 1];
-}
-KeyValue *Namespace::GetCurrentKeyValue()
-{
-	return keyValueHolder[m_currentKeyValueIndex];
-}
-Namespace *Namespace::GetCurrentNamespace()
-{
-	return namespaceHolder[m_currentNamespaceIndex];
-}
+	keyValueIndex.push_back(false);
+	// Stores the index for alphabetizing
+	sortedNamespace.push_back(sortedNamespace.size());
 
+}
+Namespace *Namespace::GetNamespace(int index)
+{
+	return namespaceHolder[index];
+}
+KeyValue *Namespace::GetKeyValue(int index)
+{
+	return keyValueHolder[index];
+}
+KeyValue *Namespace::GetKeyValue(char *key)
+{
+	char baseKey[64];
+	// Gets the position of the period if there is one
+	int periodPos = strstr(key, ".") -key;
 
+	// Variables used for the binary search
+	int hi, lo, mid;
+
+	if(periodPos >= 0)
+	{
+		// The keyvalue is nested in a namespace
+		strncpy(baseKey, key, periodPos);
+
+		// Adds null to the end of the string
+		baseKey[periodPos] = NULL;
+
+		lo = 0;
+		hi = namespaceHolder.size() - 1;
+
+		// Uses a binary search for the indexes
+		while(lo <= hi)
+		{
+			mid = (hi + lo) / 2;
+			if(strcmp(baseKey, namespaceHolder[sortedNamespace[mid]]->GetName()) == 0)
+			{
+				return namespaceHolder[sortedNamespace[mid]]->GetKeyValue(key + periodPos + 1);
+			}
+			else if(strcmp(baseKey, namespaceHolder[sortedNamespace[mid]]->GetName()) > 0)
+			{
+				lo = mid + 1;
+
+			}
+			else
+			{
+				hi = mid - 1;
+			}
+		}
+	}
+	else
+	{
+		lo = 0;
+		hi = keyValueHolder.size() - 1;
+
+		while(lo <= hi)
+		{
+			mid = (hi + lo) / 2;
+
+			if(strcmp(key, keyValueHolder[sortedKeyValue[mid]]->GetName()) == 0)
+			{
+				return keyValueHolder[sortedKeyValue[mid]];
+			}
+			else if(strcmp(key, keyValueHolder[sortedKeyValue[mid]]->GetName()) > 0)
+			{
+				lo = mid + 1;
+			}
+			else
+			{
+				hi = mid - 1;
+			}
+		}
+	}
+
+	// If it couldn't find anything return null
+	return NULL;
+}
+// It is imperitive that you call this function after adding
+// keyvalue, since the keyvalue search uses a binary search
+// This function should probbaly only be called after loading
+// file
+void Namespace::SortIndexes()
+{
+	int lowestIndex = 0, tempIndex;
+	// Sort the key values
+	for(int i = 0;i < sortedKeyValue.size();i++)
+	{
+		for(int j = i;j < sortedKeyValue.size();j++)
+		{
+			if(strcmp(keyValueHolder[j]->GetName(), keyValueHolder[lowestIndex]->GetName())
+				< 0)
+			{
+				lowestIndex = j;
+			}
+		}
+
+		// Move the lowest value to the very front
+		tempIndex = sortedKeyValue[i];
+		sortedKeyValue[i] = sortedKeyValue[lowestIndex];
+		sortedKeyValue[lowestIndex] = tempIndex;
+	}
+
+	// Sort the namespaces
+	for(int i = 0;i < sortedNamespace.size();i++)
+	{
+		for(int j = i;j < sortedNamespace.size();j++)
+		{
+			if(strcmp(namespaceHolder[j]->GetName(), namespaceHolder[lowestIndex]->GetName())
+				< 0)
+			{
+				lowestIndex = j;
+			}
+		}
+
+		// Move the lowest value to the very front
+		tempIndex = sortedNamespace[i];
+		sortedNamespace[i] = sortedNamespace[lowestIndex];
+		sortedNamespace[lowestIndex] = tempIndex;
+	}
+
+	// Sort the sub namespaces
+	for(int i = 0;i < namespaceHolder.size();i++)
+		namespaceHolder[i]->SortIndexes();
+
+}
+bool Namespace::isIndexNamespace(int index)
+{
+	return !keyValueIndex[index];
+}
+bool Namespace::isIndexKeyValue(int index)
+{
+	return keyValueIndex[index];
+}
+bool Namespace::isIndexEnd(int index)
+{
+	return index >= namespaceHolder.size() + keyValueHolder.size();
+}
 SKS::SKS(void)
 {
 	m_fileContents = NULL;
@@ -204,6 +298,9 @@ Namespace *SKS::GetNamespaceFromFile(const char *fileName)
 
 	// Adds sets the namespace without a name
 	topLevel = GetNamespace(curPosition, true);
+
+	// Sorts the names for a faster search
+	topLevel->SortIndexes();
 
 	// Deletes the character buffer
 	delete []m_fileContents;
@@ -498,4 +595,51 @@ int SKS::Advance(Position &pos)
 		pos.colum = 0;
 	}
 	return ++pos.pos;
+}
+void SKS::PrintNamespace(Namespace *name, int indent)
+{
+	// If this is not the top level namespace print the name
+	if(name->GetName())
+	{
+		for(int i = 0;i < indent;i++)
+			cout << " ";
+		cout << name->GetName() << endl;
+	}
+
+	int index = 0, namespaceIndex = 0, keyValueIndex = 0;
+	while(!name->isIndexEnd(index))
+	{
+		// Uses propper indentation
+		for(int i = 0;i < indent;i++)
+			cout << " ";
+
+		if(name->isIndexNamespace(index))
+		{
+			PrintNamespace(name->GetNamespace(namespaceIndex), indent + 1);
+			namespaceIndex++;
+		}
+		else if(name->isIndexKeyValue(index))
+		{
+			PrintKeyValue(name->GetKeyValue(index), indent + 1);
+			keyValueIndex++;
+		}
+		index++;
+	}
+}
+void SKS::PrintKeyValue(KeyValue *keyValue, int indent)
+{
+	// Implements propper indentation level
+	for(int i = 0;i < indent;i++)
+		cout << " ";
+
+	// Prints keyvalue name
+	cout << keyValue->GetName() << " ";
+
+	// Prints the keyvalue value
+	if(keyValue->isInteger())
+		cout << keyValue->GetInteger() << endl;
+	else if(keyValue->isString())
+		cout << keyValue->GetString() << endl;
+	else if(keyValue->isReal())
+		cout << keyValue->GetReal() << endl;
 }

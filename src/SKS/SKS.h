@@ -69,21 +69,23 @@ public:
 	char *GetName();
 	void AddKeyValue(KeyValue *);
 	void AddNamespace(Namespace *);
-	void GetFirstIndex();
-	bool isNextIndexKeyValue();
-	bool isNextIndexNamespace();
-	KeyValue *GetNextKeyValue();
-	Namespace *GetNextNamespace();
-	KeyValue *GetCurrentKeyValue();
-	Namespace *GetCurrentNamespace();
+	KeyValue *GetKeyValue(int index);
+	KeyValue *GetKeyValue(char *key);
+	Namespace *GetNamespace(int index);
+	bool isIndexKeyValue(int index);
+	bool isIndexNamespace(int index);
+	bool isIndexEnd(int index);
+	void SortIndexes();
 private:
 	// maps that the key value and Namespaces are held in
 	 vector<Namespace *> namespaceHolder;
 	 vector<KeyValue *> keyValueHolder;
+	 vector<int> sortedNamespace;
+	 vector<int> sortedKeyValue;
 	 char *m_name;  // Holds name until it can be put in a map
 
 	 // Holds information for the order of key values and namespaces
-	 vector<bool> isIndexKeyValue;
+	 vector<bool> keyValueIndex;
 	 // Used to remember the last index for the GetNext functions
 	 int m_currentKeyValueIndex;
 	 int m_currentNamespaceIndex;
@@ -94,6 +96,8 @@ public:
 	SKS();
 	~SKS();
 	Namespace *GetNamespaceFromFile(const char *);
+	void PrintNamespace(Namespace *name, int indent = 0);
+	void PrintKeyValue(KeyValue *, int indent = 0);
 	char *GetVersion();
 private:
 	bool isLineKeyValue(Position pos);
