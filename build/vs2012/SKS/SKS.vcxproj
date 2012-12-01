@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\SKS\SKS.cpp" />
-    <ClCompile Include="..\..\..\src\SKS\Test_SKS.cpp" />
+    <ClInclude Include="..\..\..\src\SKS.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\src\SKS\SKS.h" />
+    <ClCompile Include="..\..\..\src\SKS.cpp" />
+    <ClCompile Include="..\..\..\src\Test_SKS.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4A4103EC-1EAE-400D-9531-D28689E50F4C}</ProjectGuid>

@@ -1,9 +1,8 @@
 #ifndef _SKS_H
 #define _SKS_H
 
-#include <iostream>
-#include <fstream>
 #include <vector>
+
 using namespace std;
 
 // Defines
@@ -90,6 +89,7 @@ private:
 	 int m_currentKeyValueIndex;
 	 int m_currentNamespaceIndex;
 };
+
 class SKS
 {
 public:
@@ -100,6 +100,10 @@ public:
 	void PrintKeyValue(KeyValue *, int indent = 0);
 	char *GetVersion();
 private:
+	void NextStatement(Position &pos);
+	void ExitNamespace(Position &pos);
+	void Next(Position &pos, bool skipComment = true);
+	void SkipComment(Position &pos);
 	bool isLineKeyValue(Position pos);
 	bool isLineNamespace(Position pos);
 	bool isLineNamespaceEnd(Position pos);
@@ -107,8 +111,7 @@ private:
 	KeyValue *GetKeyValue(Position &pos);
 	Namespace *GetNamespace(Position &pos, bool noName = false);
 	char *GetName(Position &pos);
-	void ExitNamespace(Position &pos);
-	int Advance(Position &pos);
+
 	char *m_fileContents;
 	unsigned int m_lengthOfFile;
 };

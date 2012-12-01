@@ -1,6 +1,6 @@
-myString : "this is a string"
+my/*Str*/ing : "this/* is a strin*/g"
 namespace
 {
-	myInt : 21343
+	//my/*Int*/ : 21/*34*/3
 	myFloat : -23.234
 }
